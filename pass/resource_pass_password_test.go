@@ -4,14 +4,13 @@ import (
 	"fmt"
 	"testing"
 
-	r "github.com/hashicorp/terraform-plugin-sdk/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/terraform"
+	r "github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 )
 
 func TestResourcePassword(t *testing.T) {
 	r.Test(t, r.TestCase{
-		Providers: testProviders,
-		PreCheck:  func() { testAccPreCheck(t) },
+		Providers: testAccProviders,
 		Steps: []r.TestStep{
 			{
 				Config: testResourcePassword_initialConfig,
