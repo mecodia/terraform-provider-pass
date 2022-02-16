@@ -48,11 +48,13 @@ And you can then reverence it as `local/mecodia/pass` in your providers block.
 ## Example
 
 ```hcl
-provider "pass" {
-  store_dir = "/srv/password-store"    # defaults to $PASSWORD_STORE_DIR
-  refresh_store = false                # do not call `git pull`
-}
-
+terraform {
+   required_providers {
+     pass = {
+       source = "mecodia/pass"
+     }
+   }
+ }
 
 resource "pass_password" "test" {
   path = "secret/foo"
