@@ -143,5 +143,13 @@ _Note:_ Acceptance tests create real resources, and often cost money to run.
 $ make testacc
 ```
 
+## Publishing the provider
+
+### Github release
+
+```shell
+summon goreleaser release --rm-dist
+```
+
 [pass]: https://www.passwordstore.org
 [gopass]: https://www.gopass.pw
