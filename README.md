@@ -1,11 +1,12 @@
 # Pass Terraform Provider
 
-[![Terraform Registry Version](https://img.shields.io/badge/dynamic/json?color=blue&label=registry&query=%24.version&url=https%3A%2F%2Fregistry.terraform.io%2Fv1%2Fproviders%2Fcamptocamp%2Fpass)](https://registry.terraform.io/providers/camptocamp/pass)
-[![Go Report Card](https://goreportcard.com/badge/github.com/camptocamp/terraform-provider-pass)](https://goreportcard.com/report/github.com/camptocamp/terraform-provider-pass)
-[![Build Status](https://travis-ci.org/camptocamp/terraform-provider-pass.svg?branch=master)](https://travis-ci.org/camptocamp/terraform-provider-pass)
-[![By Camptocamp](https://img.shields.io/badge/by-camptocamp-fb7047.svg)](http://www.camptocamp.com)
+[![Terraform Registry Version](https://img.shields.io/badge/dynamic/json?color=blue&label=registry&query=%24.version&url=https%3A%2F%2Fregistry.terraform.io%2Fv1%2Fproviders%2Fmecodia%2Fpass)](https://registry.terraform.io/providers/mecodia/pass)
+[![Go Report Card](https://goreportcard.com/badge/github.com/mecodia/terraform-provider-pass)](https://goreportcard.com/report/github.com/mecodia/terraform-provider-pass)
+[![By mecodia](https://img.shields.io/badge/by-mecodia-fb7047.svg)](https://www.mecodia.com)
 
-This provider adds integration between Terraform and [Pass][] and [Gopass][] password stores.
+This provider adds integration between Terraform, [Pass][] and [Gopass][] password stores.
+
+It was forked from [camptocamp/terraform-provider-pass](https://github.com/camptocamp/terraform-provider-pass).
 
 [Pass][] is a password store using gpg to encrypt password and git to version.
 [Gopass][] is a rewrite of the pass password manager in Go with the aim of making it cross-platform and adding additional features.
@@ -20,20 +21,29 @@ This provider adds integration between Terraform and [Pass][] and [Gopass][] pas
 Download the provider source code
 
 ```sh
-$ go get github.com/camptocamp/terraform-provider-pass
+$ go get github.com/mecodia/terraform-provider-pass
 ```
 
 Enter the provider directory and build the provider
 
 ```sh
-$ cd $GOPATH/src/github.com/camptocamp/terraform-provider-pass
+$ cd $GOPATH/src/github.com/mecodia/terraform-provider-pass
 $ dep ensure
 $ make build
 ```
 
 ## Installing the provider
 
-After building the provider, install it using the Terraform instructions for [installing a third party provider](https://www.terraform.io/docs/configuration/providers.html#third-party-plugins).
+With Terraform 0.14 you'll load it straight from the registry.
+
+For development and testing purposes you can do this (adjust for your os/arch):
+
+```shell
+mkdir -p $(HOME)/.terraform.d/plugins/local/mecodia/pass/3.0/darwin_arm64/
+cp ./bin/$(BINARY)_*_darwin_arm64 $(HOME)/.terraform.d/plugins/local/mecodia/pass/3.0/darwin_arm64/$(BINARY)
+```
+
+And you can then reverence it as `local/mecodia/pass` in your providers block.
 
 ## Example
 
@@ -106,7 +116,7 @@ The following attributes are exported:
 
 ## Developing the Provider
 
-If you wish to work on the provider, you'll first need [Go](http://www.golang.org) installed on your machine (version 1.8+ is _required_). You'll also need to correctly setup a [GOPATH](http://golang.org/doc/code.html#GOPATH), as well as adding `$GOPATH/bin` to your `$PATH`.
+If you wish to work on the provider, you'll first need [Go](http://www.golang.org) installed on your machine (version 1.17+ is _required_). You'll also need to correctly set up a [GOPATH](http://golang.org/doc/code.html#GOPATH), as well as adding `$GOPATH/bin` to your `$PATH`.
 
 To compile the provider, run `make build`. This will build the provider and put the provider binary in the `$GOPATH/bin` directory.
 
@@ -131,5 +141,5 @@ _Note:_ Acceptance tests create real resources, and often cost money to run.
 $ make testacc
 ```
 
-[pass]: https://www.passwordstore.org/
-[gopass]: https://www.justwatch.com/gopass/
+[pass]: https://www.passwordstore.org
+[gopass]: https://www.gopass.pw

@@ -3,18 +3,16 @@ GOFMT_FILES?=$$(find . -name '*.go' |grep -v vendor)
 PKG_NAME=pass
 
 BINARY=terraform-provider-pass
-VERSION = $(shell git describe --always)
+VERSION = "$(shell git describe --always)"
 
 default: build-all
 
 build-all: linux windows darwin
 
-install: fmtcheck
-	go install
-
 linux: fmtcheck
 	@mkdir -p bin/
 	GOOS=linux GOARCH=amd64 go build -v -o bin/$(BINARY)_$(VERSION)_linux_amd64
+	GOOS=linux GOARCH=arm64 go build -v -o bin/$(BINARY)_$(VERSION)_linux_arm64
 	GOOS=linux GOARCH=386 go build -v -o bin/$(BINARY)_$(VERSION)_linux_x86
 
 windows: fmtcheck
@@ -25,7 +23,7 @@ windows: fmtcheck
 darwin: fmtcheck
 	@mkdir -p bin/
 	GOOS=darwin GOARCH=amd64 go build -v -o bin/$(BINARY)_$(VERSION)_darwin_amd64
-	GOOS=darwin GOARCH=386 go build -v -o bin/$(BINARY)_$(VERSION)_darwin_x86
+	GOOS=darwin GOARCH=arm64 go build -v -o bin/$(BINARY)_$(VERSION)_darwin_arm64
 
 release: clean linux windows darwin
 	for f in $(shell ls bin/); do zip bin/$${f}.zip bin/$${f}; done

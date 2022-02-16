@@ -3,19 +3,19 @@ package pass
 import (
 	"context"
 	"fmt"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"log"
 	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/pkg/errors"
 )
 
 func passPasswordResource() *schema.Resource {
 	return &schema.Resource{
-		Create: passPasswordResourceWrite,
-		Update: passPasswordResourceWrite,
-		Delete: passPasswordResourceDelete,
-		Read:   passPasswordResourceRead,
+		CreateContext: passPasswordResourceWrite,
+		UpdateContext: passPasswordResourceWrite,
+		DeleteContext: passPasswordResourceDelete,
+		ReadContext:   passPasswordResourceRead,
 
 		Schema: map[string]*schema.Schema{
 			"path": {
@@ -61,7 +61,7 @@ func passPasswordResource() *schema.Resource {
 	}
 }
 
-func passPasswordResourceWrite(d *schema.ResourceData, meta interface{}) error {
+func passPasswordResourceWrite(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	path := d.Get("path").(string)
 	log.Printf("writing secret to path %s", path)
 
@@ -75,7 +75,7 @@ func passPasswordResourceWrite(d *schema.ResourceData, meta interface{}) error {
 	yaml := d.Get("yaml").(string)
 
 	if len(data) != 0 && yaml != "" {
-		return errors.New("can't set data and yaml at the same time")
+		return diag.Errorf("can't set data and yaml at the same time")
 	}
 
 	value := password
@@ -96,14 +96,14 @@ func passPasswordResourceWrite(d *schema.ResourceData, meta interface{}) error {
 	err := st.Set(context.Background(), path, container)
 
 	if err != nil {
-		return errors.Wrapf(err, "failed to write secret at %s", path)
+		return diag.Errorf("failed to write secret at %s: %s", path, err)
 	}
 
 	d.SetId(path)
 	return nil
 }
 
-func passPasswordResourceDelete(d *schema.ResourceData, meta interface{}) error {
+func passPasswordResourceDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	path := d.Id()
 
 	pp := meta.(*passProvider)
@@ -113,17 +113,21 @@ func passPasswordResourceDelete(d *schema.ResourceData, meta interface{}) error 
 	log.Printf("deleting secret at %s", path)
 	err := st.Remove(context.Background(), path)
 	if err != nil {
-		return errors.Wrapf(err, "failed to delete secret at %s", path)
+		return diag.Errorf("failed to delete secret at %s: %s", path, err)
 	}
 
 	return nil
 }
 
-func passPasswordResourceRead(d *schema.ResourceData, meta interface{}) error {
+func passPasswordResourceRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	path := d.Id()
 
 	pp := meta.(*passProvider)
 	pp.mutex.Lock()
 	defer pp.mutex.Unlock()
-	return populateResourceData(d, pp, path, false)
+	err := populateResourceData(d, pp, path, false)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+	return nil
 }

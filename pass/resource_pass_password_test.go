@@ -10,24 +10,25 @@ import (
 
 func TestResourcePassword(t *testing.T) {
 	r.Test(t, r.TestCase{
-		Providers: testAccProviders,
+		//Providers: testAccProviders,
+		ProviderFactories: testProviderFactory,
 		Steps: []r.TestStep{
 			{
-				Config: testResourcePassword_initialConfig,
-				Check:  testResourcePassword_initialCheck,
+				Config: testResourcePasswordInitialConfig,
+				Check:  testResourcePasswordInitialCheck,
 			},
 			{
-				Config: testResourcePassword_updateConfig,
-				Check:  testResourcePassword_updateCheck,
+				Config: testResourcePasswordUpdateConfig,
+				Check:  testResourcePasswordUpdateCheck,
 			},
 		},
 	})
 }
 
-var testResourcePassword_initialConfig = `
+var testResourcePasswordInitialConfig = `
 
 resource "pass_password" "test" {
-    path = "secret/foo"
+    path = "tf-pass-provider/secret/foo"
 	password = "0123456789"
     data = {
         zip = "zap"
@@ -36,7 +37,7 @@ resource "pass_password" "test" {
 
 `
 
-func testResourcePassword_initialCheck(s *terraform.State) error {
+func testResourcePasswordInitialCheck(s *terraform.State) error {
 	resourceState := s.Modules[0].Resources["pass_password.test"]
 	if resourceState == nil {
 		return fmt.Errorf("resource not found in state")
@@ -52,7 +53,7 @@ func testResourcePassword_initialCheck(s *terraform.State) error {
 	if path != instanceState.Attributes["path"] {
 		return fmt.Errorf("id doesn't match path")
 	}
-	if path != "secret/foo" {
+	if path != "tf-pass-provider/secret/foo" {
 		return fmt.Errorf("unexpected secret path")
 	}
 
@@ -67,10 +68,10 @@ func testResourcePassword_initialCheck(s *terraform.State) error {
 	return nil
 }
 
-var testResourcePassword_updateConfig = `
+var testResourcePasswordUpdateConfig = `
 
 resource "pass_password" "test" {
-    path = "secret/foo"
+    path = "tf-pass-provider/secret/foo"
 	password = "012345678"
     data = {
         zip = "zoop"
@@ -79,7 +80,7 @@ resource "pass_password" "test" {
 
 `
 
-func testResourcePassword_updateCheck(s *terraform.State) error {
+func testResourcePasswordUpdateCheck(s *terraform.State) error {
 	resourceState := s.Modules[0].Resources["pass_password.test"]
 	if resourceState == nil {
 		return fmt.Errorf("resource not found in state")

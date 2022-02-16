@@ -10,7 +10,7 @@ import (
 
 func TestDataSourcePassword(t *testing.T) {
 	r.Test(t, r.TestCase{
-		Providers: testAccProviders,
+		ProviderFactories: testProviderFactory,
 		Steps: []r.TestStep{
 			{
 				Config: testDataSourcePasswordConfig,
@@ -23,7 +23,7 @@ func TestDataSourcePassword(t *testing.T) {
 var testDataSourcePasswordConfig = `
 
 resource "pass_password" "test" {
-    path = "secret/foo"
+    path = "tf-pass-provider/secret/foo"
 	password = "0123456789"
     data = {
 	  zip = "zap"

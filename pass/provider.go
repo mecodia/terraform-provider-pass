@@ -6,8 +6,8 @@ import (
 
 	"github.com/gopasspw/gopass/pkg/ctxutil"
 	"github.com/gopasspw/gopass/pkg/gopass/api"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/pkg/errors"
 )
 
 type passProvider struct {
@@ -17,7 +17,7 @@ type passProvider struct {
 
 func Provider() *schema.Provider {
 	return &schema.Provider{
-		ConfigureFunc: providerConfigure,
+		ConfigureContextFunc: providerConfigureContext,
 		DataSourcesMap: map[string]*schema.Resource{
 			"pass_password": passwordDataSource(),
 		},
@@ -27,12 +27,11 @@ func Provider() *schema.Provider {
 	}
 }
 
-func providerConfigure(d *schema.ResourceData) (interface{}, error) {
-	ctx := context.Background()
-
+func providerConfigureContext(ctx context.Context, data *schema.ResourceData) (interface{}, diag.Diagnostics) {
 	store, err := api.New(ctxutil.WithShowParsing(ctx, false))
+
 	if err != nil {
-		return nil, errors.Wrap(err, "error instantiating password store")
+		return nil, diag.FromErr(err)
 	}
 
 	pp := &passProvider{

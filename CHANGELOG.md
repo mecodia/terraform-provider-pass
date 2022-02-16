@@ -1,3 +1,17 @@
+## 3.0.0 (Feb 16, 2022)
+
+Forked the original camptocamp provider to do some maintenance.
+
+Use should be exactly like v2.0.0 but because of those big changes I'd rather release a new major version. 
+
+BREAKING CHANGES:
+
+* Ported to gopass 1.13.1 (from 1.11)
+* Ported to terraform-plugin-sdk 2.10.1 (from 2.0.3)
+* Ported to go 1.17 (from 1.15)
+* Create arm64 binaries
+* Cleanup the repository
+
 ## 2.0.0 (Jan 14, 2021)
 
 BREAKING CHANGES:
@@ -95,7 +109,7 @@ BUG FIXES:
 
 BUG FIXES:
 
-* datasource/password: don't fail if unmarshaling fails
+* datasource/password: don't fail if unmarshalling fails
 
 ## 0.1.0 (Jan 16, 2017)
 

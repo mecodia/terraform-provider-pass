@@ -2,10 +2,9 @@ package pass
 
 import (
 	"context"
-	"log"
-
+	"fmt"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/pkg/errors"
+	"log"
 )
 
 // Used as interface to write gopass secrets
@@ -17,19 +16,14 @@ func (c secretContainer) Bytes() []byte {
 	return []byte(c.value)
 }
 
-// Used as context for secret template
-type templateData struct {
-	Data map[string]interface{}
-}
-
 // generic function to be used in resource and data source
 func populateResourceData(d *schema.ResourceData, provider *passProvider, path string, readData bool) error {
 	st := provider.store
 	log.Printf("reading %s from gopass", path)
 
-	sec, err := st.Get(context.Background(), path, "") //TODO: support getting a revison via terraform?
+	sec, err := st.Get(context.Background(), path, "") //TODO: support getting a revision via terraform?
 	if err != nil {
-		return errors.Wrapf(err, "failed to read password at %s", path)
+		return fmt.Errorf("failed to read password at %s: %w", path, err)
 	}
 
 	// Retrieve all data items if keys exist
@@ -41,7 +35,10 @@ func populateResourceData(d *schema.ResourceData, provider *passProvider, path s
 			for _, key := range keys {
 				data[key], _ = sec.Get(key)
 			}
-			d.Set("data", data)
+			err := d.Set("data", data)
+			if err != nil {
+				return err
+			}
 		}
 	}
 
