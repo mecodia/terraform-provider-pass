@@ -17,17 +17,14 @@ description: |-
 
 ### Required
 
-- **path** (String) Full path from which a password will be read
-
-### Optional
-
-- **id** (String) The ID of this resource.
+- `path` (String) Full path from which a password will be read
 
 ### Read-Only
 
-- **body** (String) Body of the secret
-- **data** (Map of String) Secret data
-- **full** (String) Entire secret contents
-- **password** (String) Secret password
+- `body` (String) Body of the secret
+- `data` (Map of String) Secret data
+- `full` (String) Entire secret contents
+- `id` (String) The ID of this resource.
+- `password` (String) Secret password
 
 

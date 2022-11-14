@@ -2,6 +2,7 @@ package pass
 
 import (
 	"context"
+	"errors"
 	"sync"
 
 	"github.com/gopasspw/gopass/pkg/ctxutil"
@@ -11,8 +12,9 @@ import (
 )
 
 type passProvider struct {
-	store *api.Gopass
-	mutex *sync.Mutex
+	store  *api.Gopass
+	mutex  *sync.Mutex
+	prefix string
 }
 
 func Provider() *schema.Provider {
@@ -24,7 +26,22 @@ func Provider() *schema.Provider {
 		ResourcesMap: map[string]*schema.Resource{
 			"pass_password": passPasswordResource(),
 		},
+		Schema: map[string]*schema.Schema{
+			"prefix": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "Global key prefix for gopass provider. Must end with a forward slash. Can be used to specify a mount point.",
+			},
+		},
 	}
+}
+
+func (pp *passProvider) GetPath(data *schema.ResourceData) string {
+	if id := data.Id(); id != "" {
+		return id
+	}
+
+	return pp.prefix + data.Get("path").(string)
 }
 
 func providerConfigureContext(ctx context.Context, data *schema.ResourceData) (interface{}, diag.Diagnostics) {
@@ -34,9 +51,16 @@ func providerConfigureContext(ctx context.Context, data *schema.ResourceData) (i
 		return nil, diag.FromErr(err)
 	}
 
+	// normalize prefix value
+	prefix := data.Get("prefix").(string)
+	if len(prefix) > 0 && (prefix == "/" || prefix[len(prefix)-1:] != "/") {
+		return nil, diag.FromErr(errors.New("the value of prefix must be a string with trailing forward slash"))
+	}
+
 	pp := &passProvider{
-		store: store,
-		mutex: &sync.Mutex{},
+		store:  store,
+		mutex:  &sync.Mutex{},
+		prefix: prefix,
 	}
 
 	return pp, nil

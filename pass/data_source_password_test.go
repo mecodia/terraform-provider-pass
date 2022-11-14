@@ -20,6 +20,12 @@ func TestDataSourcePassword(t *testing.T) {
 				Config: testDataSourcePasswordConfig,
 				Check:  testDataSourcePasswordCheck,
 			},
+			{
+				// intentionally use the same Check func
+				// behaviour should be the same regardless of prefix
+				Config: testDataSourcePasswordWithPrefixConfig,
+				Check:  testDataSourcePasswordCheck,
+			},
 		},
 	})
 }
@@ -42,7 +48,7 @@ resource "pass_password" "test" {
     path = "tf-pass-provider/secret/datasource-test"
 	password = "0123456789"
     data = {
-	  zip = "zap"
+        zip = "zap"
     }
 }
 
@@ -81,3 +87,26 @@ func testDataSourcePasswordCheck(s *terraform.State) error {
 
 	return nil
 }
+
+var testDataSourcePasswordWithPrefixConfig = `
+
+provider "pass" {
+    prefix = "tf-pass-provider/"
+    alias  = "prefix"
+}
+
+resource "pass_password" "test" {
+    provider = pass.prefix
+    path     = "secret/foo-with-prefix"
+    password = "0123456789"
+    data = {
+        zip = "zap"
+    }
+}
+
+data "pass_password" "test" {
+    provider = pass.prefix
+    path     = "${pass_password.test.path}"
+}
+
+`
