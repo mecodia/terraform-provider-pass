@@ -13,6 +13,10 @@ func TestDataSourcePassword(t *testing.T) {
 		ProviderFactories: testProviderFactory,
 		Steps: []r.TestStep{
 			{
+				Config: testDataSourcePasswordInitialConfig,
+				Check:  testDataSourcePasswordInitialCOnfig,
+			},
+			{
 				Config: testDataSourcePasswordConfig,
 				Check:  testDataSourcePasswordCheck,
 			},
@@ -20,10 +24,22 @@ func TestDataSourcePassword(t *testing.T) {
 	})
 }
 
+var testDataSourcePasswordInitialConfig = `
+
+resource "pass_password" "test" {
+    path = "tf-pass-provider/secret/datasource-test"
+	password = "0123456789"
+    data = {
+        zip = "zap"
+	}
+}
+
+`
+
 var testDataSourcePasswordConfig = `
 
 resource "pass_password" "test" {
-    path = "tf-pass-provider/secret/foo"
+    path = "tf-pass-provider/secret/datasource-test"
 	password = "0123456789"
     data = {
 	  zip = "zap"
@@ -35,6 +51,14 @@ data "pass_password" "test" {
 }
 
 `
+
+func testDataSourcePasswordInitialCOnfig(s *terraform.State) error {
+	resourceState := s.Modules[0].Resources["pass_password.test"]
+	if resourceState == nil {
+		return fmt.Errorf("resource not found in state")
+	}
+	return nil
+}
 
 func testDataSourcePasswordCheck(s *terraform.State) error {
 	resourceState := s.Modules[0].Resources["data.pass_password.test"]
