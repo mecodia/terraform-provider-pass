@@ -3,8 +3,9 @@ package pass
 import (
 	"context"
 	"fmt"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"log"
+
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 // Used as interface to write gopass secrets
@@ -17,11 +18,10 @@ func (c secretContainer) Bytes() []byte {
 }
 
 // generic function to be used in resource and data source
-func populateResourceData(d *schema.ResourceData, provider *passProvider, path string, readData bool) error {
-	st := provider.store
+func populateResourceData(d *schema.ResourceData, pp *passProvider, path string, readData bool) error {
 	log.Printf("reading %s from gopass", path)
 
-	sec, err := st.Get(context.Background(), path, "") //TODO: support getting a revision via terraform?
+	sec, err := pp.store.Get(context.Background(), path, "") //TODO: support getting a revision via terraform?
 	if err != nil {
 		return fmt.Errorf("failed to read password at %s: %w", path, err)
 	}

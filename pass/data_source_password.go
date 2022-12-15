@@ -2,6 +2,8 @@ package pass
 
 import (
 	"context"
+	"log"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
@@ -44,14 +46,18 @@ func passwordDataSource() *schema.Resource {
 }
 
 func passwordDataSourceRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	path := d.Get("path").(string)
 	pp := meta.(*passProvider)
 	pp.mutex.Lock()
 	defer pp.mutex.Unlock()
+
+	path := pp.GetPath(d)
+	log.Printf("reading data secret at %s", path)
+
 	d.SetId(path)
 	err := populateResourceData(d, pp, path, true)
 	if err != nil {
 		return diag.FromErr(err)
 	}
+
 	return nil
 }

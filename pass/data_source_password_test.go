@@ -14,10 +14,16 @@ func TestDataSourcePassword(t *testing.T) {
 		Steps: []r.TestStep{
 			{
 				Config: testDataSourcePasswordInitialConfig,
-				Check:  testDataSourcePasswordInitialCOnfig,
+				Check:  testDataSourcePasswordInitialCheck,
 			},
 			{
 				Config: testDataSourcePasswordConfig,
+				Check:  testDataSourcePasswordCheck,
+			},
+			{
+				// intentionally use the same Check func
+				// behaviour should be the same regardless of prefix
+				Config: testDataSourcePasswordWithPrefixConfig,
 				Check:  testDataSourcePasswordCheck,
 			},
 		},
@@ -28,10 +34,10 @@ var testDataSourcePasswordInitialConfig = `
 
 resource "pass_password" "test" {
     path = "tf-pass-provider/secret/datasource-test"
-	password = "0123456789"
+    password = "0123456789"
     data = {
         zip = "zap"
-	}
+    }
 }
 
 `
@@ -40,9 +46,9 @@ var testDataSourcePasswordConfig = `
 
 resource "pass_password" "test" {
     path = "tf-pass-provider/secret/datasource-test"
-	password = "0123456789"
+    password = "0123456789"
     data = {
-	  zip = "zap"
+        zip = "zap"
     }
 }
 
@@ -52,7 +58,7 @@ data "pass_password" "test" {
 
 `
 
-func testDataSourcePasswordInitialCOnfig(s *terraform.State) error {
+func testDataSourcePasswordInitialCheck(s *terraform.State) error {
 	resourceState := s.Modules[0].Resources["pass_password.test"]
 	if resourceState == nil {
 		return fmt.Errorf("resource not found in state")
@@ -81,3 +87,26 @@ func testDataSourcePasswordCheck(s *terraform.State) error {
 
 	return nil
 }
+
+var testDataSourcePasswordWithPrefixConfig = `
+
+provider "pass" {
+    prefix = "tf-pass-provider/"
+    alias  = "prefix"
+}
+
+resource "pass_password" "test" {
+    provider = pass.prefix
+    path     = "secret/foo-with-prefix"
+    password = "0123456789"
+    data = {
+        zip = "zap"
+    }
+}
+
+data "pass_password" "test" {
+    provider = pass.prefix
+    path     = "${pass_password.test.path}"
+}
+
+`

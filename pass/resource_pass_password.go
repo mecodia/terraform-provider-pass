@@ -3,10 +3,10 @@ package pass
 import (
 	"context"
 	"fmt"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"log"
 	"strings"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -62,13 +62,12 @@ func passPasswordResource() *schema.Resource {
 }
 
 func passPasswordResourceWrite(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	path := d.Get("path").(string)
-	log.Printf("writing secret to path %s", path)
-
 	pp := meta.(*passProvider)
 	pp.mutex.Lock()
 	defer pp.mutex.Unlock()
-	st := pp.store
+
+	path := pp.GetPath(d)
+	log.Printf("writing resource secret at %s", path)
 
 	password := d.Get("password").(string)
 	data := d.Get("data").(map[string]interface{})
@@ -93,25 +92,26 @@ func passPasswordResourceWrite(ctx context.Context, d *schema.ResourceData, meta
 	}
 
 	container := secretContainer{value: value}
-	err := st.Set(context.Background(), path, container)
+	err := pp.store.Set(context.Background(), path, container)
 
 	if err != nil {
 		return diag.Errorf("failed to write secret at %s: %s", path, err)
 	}
 
 	d.SetId(path)
+
 	return nil
 }
 
 func passPasswordResourceDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	path := d.Id()
-
 	pp := meta.(*passProvider)
 	pp.mutex.Lock()
 	defer pp.mutex.Unlock()
-	st := pp.store
-	log.Printf("deleting secret at %s", path)
-	err := st.Remove(context.Background(), path)
+
+	path := pp.GetPath(d)
+	log.Printf("deleting resource secret at %s", path)
+
+	err := pp.store.Remove(context.Background(), path)
 	if err != nil {
 		return diag.Errorf("failed to delete secret at %s: %s", path, err)
 	}
@@ -120,14 +120,17 @@ func passPasswordResourceDelete(ctx context.Context, d *schema.ResourceData, met
 }
 
 func passPasswordResourceRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	path := d.Id()
-
 	pp := meta.(*passProvider)
 	pp.mutex.Lock()
 	defer pp.mutex.Unlock()
+
+	path := pp.GetPath(d)
+	log.Printf("reading resource secret at %s", path)
+
 	err := populateResourceData(d, pp, path, false)
 	if err != nil {
 		return diag.FromErr(err)
 	}
+
 	return nil
 }
